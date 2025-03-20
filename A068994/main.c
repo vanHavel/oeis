@@ -12,6 +12,8 @@
  * Instead of computing the entire decimal expansion of 2^n, we work with just the last 40 digits.
  * Essentially, we are looking at the number 2^n mod 10^40.
  * If this number already contains odd digits, we know that 2^n has odd digits.
+ * However, after checking around 1.33 * 10^11 numbers, a first number is found where the 40 last digits are even.
+ * So DIGITS must be increased to continue the search with this approach.
  */
 int DIGITS = 40;
 // we handle batches of 1 billion numbers at a time
@@ -35,6 +37,7 @@ inline void times16(int *tail) {
         tail[i] += carry;
         next_carry += tail[i] / 10;
         tail[i] %= 10;
+        // use &= to avoid branching
         good &= tail[i] % 2 == 0;
         carry = next_carry;
     }
@@ -61,6 +64,7 @@ int main() {
         }
         long long steps = 0;
         while (1) {
+            // use batched inner loop to avoid branching for the prints
             for (int i = 0; i < BATCH; i++) {
                 // each thread is skipping over 4 numbers at a time, hence we multiply by 16 = 2^4
                 times16(tail);
